@@ -424,6 +424,108 @@ test('/\\s/', testQuery, {
   type: 'Tag',
 });
 
+test('path:/^C:\\\\test.*/', testQuery, {
+  expression: {
+    location: {
+      end: 18,
+      start: 5,
+    },
+    type: 'RegexExpression',
+    value: '/^C:\\\\test.*/',
+  },
+  field: {
+    location: {
+      end: 4,
+      start: 0,
+    },
+    name: 'path',
+    path: ['path'],
+    quoted: false,
+    type: 'Field',
+  },
+  location: {
+    end: 18,
+    start: 0,
+  },
+  operator: {
+    location: {
+      end: 5,
+      start: 4,
+    },
+    operator: ':',
+    type: 'ComparisonOperator',
+  },
+  type: 'Tag',
+});
+
+test('path:/^C:\\\\test\\\\/', testQuery, {
+  expression: {
+    location: {
+      end: 18,
+      start: 5,
+    },
+    type: 'RegexExpression',
+    value: '/^C:\\\\test\\\\/',
+  },
+  field: {
+    location: {
+      end: 4,
+      start: 0,
+    },
+    name: 'path',
+    path: ['path'],
+    quoted: false,
+    type: 'Field',
+  },
+  location: {
+    end: 18,
+    start: 0,
+  },
+  operator: {
+    location: {
+      end: 5,
+      start: 4,
+    },
+    operator: ':',
+    type: 'ComparisonOperator',
+  },
+  type: 'Tag',
+});
+
+test('foo:/a\\\\\\b/', testQuery, {
+  expression: {
+    location: {
+      end: 11,
+      start: 4,
+    },
+    type: 'RegexExpression',
+    value: '/a\\\\\\b/',
+  },
+  field: {
+    location: {
+      end: 3,
+      start: 0,
+    },
+    name: 'foo',
+    path: ['foo'],
+    quoted: false,
+    type: 'Field',
+  },
+  location: {
+    end: 11,
+    start: 0,
+  },
+  operator: {
+    location: {
+      end: 4,
+      start: 3,
+    },
+    operator: ':',
+    type: 'ComparisonOperator',
+  },
+  type: 'Tag',
+});
+
 test(
   '/[^.:@\\s](?:[^:@\\s]*[^.:@\\s])?@[^.@\\s]+(?:\\.[^.@\\s]+)*/',
   testQuery,
