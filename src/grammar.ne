@@ -133,7 +133,7 @@ post_boolean_primary ->
 
 tag_expression ->
     
-    field comparison_operator expression {% (data, start) => {
+    field comparison_operator expression comma_expression:* trailing_comma:? {% (data, start) => {
     const field = {
       type: 'Field',
       name: data[0].name,
@@ -147,15 +147,39 @@ tag_expression ->
       delete field.quotes;
     }
 
-    return {
+    const createTag = (expression, tagStart) => ({
       location: {
-        start,
-        end: data[2].expression.location.end,
+        start: tagStart,
+        end: expression.expression.location.end,
       },
       field,
       operator: data[1],
-      ...data[2]
+      ...expression
+    });
+
+    let result: any = createTag(data[2], start);
+
+    for (const item of data[3]) {
+      const expressionStart = item.expression.expression.location.start;
+      const right = createTag(item.expression, expressionStart);
+
+      result = {
+        type: 'LogicalExpression',
+        location: {
+          start: result.location.start,
+          end: right.location.end,
+        },
+        operator: item.operator,
+        left: result,
+        right,
+      };
     }
+
+    if (data[4]) {
+      result.location.end = data[4].location.end;
+    }
+
+    return result;
   } %}
   | field comparison_operator {% (data, start) => {
     const field = {
@@ -191,6 +215,27 @@ tag_expression ->
   | expression {% (data, start) => {
     return {location: {start, end: data[0].expression.location.end}, field: {type: 'ImplicitField'}, ...data[0]};
   } %}
+
+comma_expression ->
+    "," expression {% (data, start) => ({
+      operator: {
+        location: {
+          start,
+          end: start + 1,
+        },
+        operator: 'OR',
+        type: 'BooleanOperator',
+      },
+      expression: data[1],
+    }) %}
+
+trailing_comma ->
+    "," {% (data, start) => ({
+      location: {
+        start,
+        end: start + 1,
+      },
+    }) %}
 
 field ->
     [_a-zA-Z$] [a-zA-Z\d_$.-]:* {% (data, start) => ({type: 'LiteralExpression', name: data[0] + data[1].join(''), quoted: false, location: {start, end: start + (data[0] + data[1].join('')).length}}) %}

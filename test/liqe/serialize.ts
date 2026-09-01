@@ -47,6 +47,16 @@ test(
 
 test('foo:bar', testQuery);
 
+test('foo:bar,baz,qux', testQuery);
+
+test('foo:bar," baz ","qux,quuz"', testQuery);
+
+test('foo:bar, baz:qux', testQuery);
+
+test('foo:bar,baz, qux:corge', testQuery);
+
+test('foo:bar,baz,', testQuery);
+
 // https://github.com/gajus/liqe/issues/18
 // https://github.com/gajus/liqe/issues/19
 test.skip('foo: bar', testQuery);

@@ -125,6 +125,7 @@ test('David OR -John', testQuery, [
 test('name:David OR John', testQuery, ['david', 'john', 'noah']);
 
 test('name:David OR name:John', testQuery, ['david', 'john']);
+test('name:David,John', testQuery, ['david', 'john']);
 test('name:"david" OR name:"john"', testQuery, ['david', 'john']);
 test('name:"David" OR name:"John"', testQuery, []);
 

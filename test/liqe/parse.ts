@@ -10,6 +10,14 @@ const testQuery = (t, expectedAst) => {
   t.deepEqual(ast, expectedAst);
 };
 
+const omitLocations = (value) => {
+  return JSON.parse(
+    JSON.stringify(value, (key, child) => {
+      return key === 'location' ? undefined : child;
+    }),
+  );
+};
+
 test('error describes offset', (t) => {
   const error = t.throws<SyntaxError>(() => {
     parse('foo &');
@@ -39,6 +47,58 @@ test('empty query (whitespace)', (t) => {
     },
     type: 'EmptyExpression',
   });
+});
+
+test('comma-separated values expand to OR expressions', (t) => {
+  t.deepEqual(
+    omitLocations(parse('key:A,B,C')),
+    omitLocations(parse('key:A OR key:B OR key:C')),
+  );
+});
+
+test('commas inside quoted values are preserved', (t) => {
+  t.deepEqual(
+    omitLocations(parse('key:"A,B"," C "')),
+    omitLocations(parse('key:"A,B" OR key:" C "')),
+  );
+});
+
+test('whitespace after a trailing comma starts a separate term', (t) => {
+  t.deepEqual(
+    omitLocations(parse('key:A, B')),
+    omitLocations(parse('key:A B')),
+  );
+
+  t.throws(() => {
+    parse('key:A ,B');
+  });
+});
+
+test('trailing commas separate the following implicit term', (t) => {
+  t.deepEqual(
+    omitLocations(parse('foo:A,B, bar:Z')),
+    omitLocations(parse('foo:A,B bar:Z')),
+  );
+});
+
+test('trailing commas are allowed at the end of a query', (t) => {
+  t.deepEqual(
+    omitLocations(parse('foo:A,B,')),
+    omitLocations(parse('foo:A,B')),
+  );
+});
+
+test('comma-separated values bind within the field expression', (t) => {
+  const ast = parse('key:A,B AND other:C');
+
+  t.is(ast.type, 'LogicalExpression');
+
+  if (ast.type !== 'LogicalExpression') {
+    return;
+  }
+
+  t.is(ast.operator.operator, 'AND');
+  t.is(ast.left.type, 'LogicalExpression');
 });
 
 test('()', testQuery, {

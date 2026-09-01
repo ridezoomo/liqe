@@ -162,6 +162,9 @@ height:{100 TO 200}
 name:foo AND height:=100
 name:foo OR name:bar
 
+# comma-separated alternatives (equivalent to name:foo OR name:bar)
+name:foo,bar
+
 # unary operators
 NOT foo
 -foo

@@ -53,7 +53,15 @@ const serializeTag = (ast: LiqeQuery) => {
 
   const patEnd = ' '.repeat(expression.location.start - operator.location.end);
 
-  return left + operator.operator + patEnd + serializeExpression(expression);
+  const trailingComma = ast.location.end > expression.location.end ? ',' : '';
+
+  return (
+    left +
+    operator.operator +
+    patEnd +
+    serializeExpression(expression) +
+    trailingComma
+  );
 };
 
 export const serialize = (ast: LiqeQuery): string => {
@@ -81,6 +89,23 @@ export const serialize = (ast: LiqeQuery): string => {
   }
 
   if (ast.type === 'LogicalExpression') {
+    if (
+      ast.operator.type === 'BooleanOperator' &&
+      ast.operator.operator === 'OR' &&
+      ast.operator.location.end - ast.operator.location.start === 1 &&
+      ast.right.type === 'Tag'
+    ) {
+      const separator =
+        ' '.repeat(ast.operator.location.start - ast.left.location.end) +
+        ',' +
+        ' '.repeat(ast.right.location.start - ast.operator.location.end);
+
+      const trailingComma =
+        ast.location.end > ast.right.expression.location.end ? ',' : '';
+
+      return `${serialize(ast.left)}${separator}${serializeExpression(ast.right.expression)}${trailingComma}`;
+    }
+
     let operator = '';
 
     if (ast.operator.type === 'BooleanOperator') {

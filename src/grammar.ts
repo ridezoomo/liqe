@@ -412,6 +412,18 @@ const grammar: Grammar = {
       postprocess: (d) => d[1],
       symbols: ['__', 'boolean_primary'],
     },
+    { name: 'tag_expression$ebnf$1', symbols: [] },
+    {
+      name: 'tag_expression$ebnf$1',
+      postprocess: (d) => d[0].concat([d[1]]),
+      symbols: ['tag_expression$ebnf$1', 'comma_expression'],
+    },
+    {
+      name: 'tag_expression$ebnf$2',
+      postprocess: id,
+      symbols: ['trailing_comma'],
+    },
+    { name: 'tag_expression$ebnf$2', postprocess: () => null, symbols: [] },
     {
       name: 'tag_expression',
       postprocess: (data, start) => {
@@ -428,17 +440,47 @@ const grammar: Grammar = {
           delete field.quotes;
         }
 
-        return {
+        const createTag = (expression, tagStart) => ({
           field,
           location: {
-            end: data[2].expression.location.end,
-            start,
+            end: expression.expression.location.end,
+            start: tagStart,
           },
           operator: data[1],
-          ...data[2],
-        };
+          ...expression,
+        });
+
+        let result: any = createTag(data[2], start);
+
+        for (const item of data[3]) {
+          const expressionStart = item.expression.expression.location.start;
+          const right = createTag(item.expression, expressionStart);
+
+          result = {
+            left: result,
+            location: {
+              end: right.location.end,
+              start: result.location.start,
+            },
+            operator: item.operator,
+            right,
+            type: 'LogicalExpression',
+          };
+        }
+
+        if (data[4]) {
+          result.location.end = data[4].location.end;
+        }
+
+        return result;
       },
-      symbols: ['field', 'comparison_operator', 'expression'],
+      symbols: [
+        'field',
+        'comparison_operator',
+        'expression',
+        'tag_expression$ebnf$1',
+        'tag_expression$ebnf$2',
+      ],
     },
     {
       name: 'tag_expression',
@@ -485,6 +527,31 @@ const grammar: Grammar = {
         };
       },
       symbols: ['expression'],
+    },
+    {
+      name: 'comma_expression',
+      postprocess: (data, start) => ({
+        expression: data[1],
+        operator: {
+          location: {
+            end: start + 1,
+            start,
+          },
+          operator: 'OR',
+          type: 'BooleanOperator',
+        },
+      }),
+      symbols: [{ literal: ',' }, 'expression'],
+    },
+    {
+      name: 'trailing_comma',
+      postprocess: (data, start) => ({
+        location: {
+          end: start + 1,
+          start,
+        },
+      }),
+      symbols: [{ literal: ',' }],
     },
     { name: 'field$ebnf$1', symbols: [] },
     {
