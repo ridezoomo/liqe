@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.internalFilter = void 0;
+const assertSupportedRange_1 = require("./assertSupportedRange");
 const createStringTest_1 = require("./createStringTest");
 const testComparisonRange_1 = require("./testComparisonRange");
 const testRange_1 = require("./testRange");
@@ -149,6 +150,9 @@ const testField = (row, ast, resultFast, path, highlights) => {
 };
 const internalFilter = (ast, rows, resultFast = true, path = [], highlights = []) => {
     if (ast.type === 'Tag') {
+        if (ast.expression.type === 'RangeExpression') {
+            (0, assertSupportedRange_1.assertSupportedRange)(ast.expression.range);
+        }
         return rows.filter((row) => {
             return testField(row, ast, resultFast, ast.field.type === 'ImplicitField' ? path : [...path, ast.field.name], highlights);
         });

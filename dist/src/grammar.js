@@ -674,9 +674,9 @@ const grammar = {
             },
             symbols: [
                 'range_open',
-                'decimal',
+                'range_value',
                 'range$string$1',
-                'decimal',
+                'range_value',
                 'range_close',
             ],
         },
@@ -700,6 +700,9 @@ const grammar = {
             postprocess: (data, start) => ({ inclusive: false, location: { start } }),
             symbols: [{ literal: '}' }],
         },
+        { name: 'range_value', postprocess: id, symbols: ['decimal'] },
+        { name: 'range_value', postprocess: id, symbols: ['dqstring'] },
+        { name: 'range_value', postprocess: id, symbols: ['sqstring'] },
         {
             name: 'comparison_operator$subexpression$1',
             symbols: [{ literal: ':' }],
