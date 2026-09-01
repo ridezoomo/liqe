@@ -1,3 +1,4 @@
+import { assertSupportedRange } from './assertSupportedRange';
 import { createStringTest } from './createStringTest';
 import { testComparisonRange } from './testComparisonRange';
 import { testRange } from './testRange';
@@ -209,6 +210,10 @@ export const internalFilter = <T extends Object>(
   highlights: InternalHighlight[] = [],
 ): readonly T[] => {
   if (ast.type === 'Tag') {
+    if (ast.expression.type === 'RangeExpression') {
+      assertSupportedRange(ast.expression.range);
+    }
+
     return rows.filter((row) => {
       return testField(
         row,
