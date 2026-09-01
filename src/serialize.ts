@@ -12,6 +12,14 @@ const quote = (value: string, quotes: 'double' | 'single') => {
   return value;
 };
 
+const serializeRangeBoundary = (value: number | string) => {
+  if (typeof value === 'string') {
+    return quote(value, 'double');
+  }
+
+  return String(value);
+};
+
 const serializeExpression = (expression: ExpressionToken) => {
   if (expression.type === 'LiteralExpression') {
     if (expression.quoted && typeof expression.value === 'string') {
@@ -28,7 +36,7 @@ const serializeExpression = (expression: ExpressionToken) => {
   if (expression.type === 'RangeExpression') {
     const { max, maxInclusive, min, minInclusive } = expression.range;
 
-    return `${minInclusive ? '[' : '{'}${min} TO ${max}${maxInclusive ? ']' : '}'}`;
+    return `${minInclusive ? '[' : '{'}${serializeRangeBoundary(min)} TO ${serializeRangeBoundary(max)}${maxInclusive ? ']' : '}'}`;
   }
 
   if (expression.type === 'EmptyExpression') {

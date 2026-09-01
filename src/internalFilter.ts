@@ -16,8 +16,6 @@ const createValueTest = (ast: LiqeQuery): InternalTest => {
   const { expression } = ast;
 
   if (expression.type === 'RangeExpression') {
-    assertSupportedRange(expression.range);
-
     return (value) => {
       return testRange(value, expression.range);
     };
@@ -212,6 +210,10 @@ export const internalFilter = <T extends Object>(
   highlights: InternalHighlight[] = [],
 ): readonly T[] => {
   if (ast.type === 'Tag') {
+    if (ast.expression.type === 'RangeExpression') {
+      assertSupportedRange(ast.expression.range);
+    }
+
     return rows.filter((row) => {
       return testField(
         row,

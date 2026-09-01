@@ -263,6 +263,10 @@ const unsupportedRangeQueries = [
   'date:[1 TO "2020-12-31"]',
   // Mismatched categories (date vs time).
   'date:["2020-01-01" TO "17:00"]',
+  // The day must exist in the given month and year.
+  'date:["2021-02-29" TO "2021-03-01"]',
+  'date:["2021-04-31" TO "2021-05-01"]',
+  'timestamp:["2021-02-29T00:00:00Z" TO "2021-03-01T00:00:00Z"]',
 ];
 
 for (const query of unsupportedRangeQueries) {
@@ -275,3 +279,40 @@ for (const query of unsupportedRangeQueries) {
     );
   });
 }
+
+test('accepts leap days in leap years', (t) => {
+  const rows = [
+    { date: '2020-02-29', id: 'leap-day' },
+    { date: '2020-03-02', id: 'after-range' },
+  ];
+
+  const matchingIds = filter(
+    parse('date:["2020-02-29" TO "2020-03-01"]'),
+    rows,
+  ).map((row) => {
+    return row.id;
+  });
+
+  t.deepEqual(matchingIds, ['leap-day']);
+});
+
+test('validates an unsupported range against an empty data set', (t) => {
+  t.throws(
+    () => {
+      return filter(parse('date:["not-a-date" TO "still-not-a-date"]'), []);
+    },
+    { instanceOf: TypeError },
+  );
+});
+
+test('validates an unsupported range in a skipped AND branch', (t) => {
+  t.throws(
+    () => {
+      return filter(
+        parse('id:no-match AND date:["not-a-date" TO "still-not-a-date"]'),
+        events,
+      );
+    },
+    { instanceOf: TypeError },
+  );
+});

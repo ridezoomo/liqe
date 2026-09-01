@@ -130,3 +130,14 @@ test('{1 TO 2]', testQuery);
 test('[1 TO 2}', testQuery);
 
 test('{1 TO 2}', testQuery);
+
+test('["2020-01-01" TO "2020-12-31"]', testQuery);
+
+test('created:{"2020-01-01" TO "2020-12-31"}', testQuery);
+
+test('canonicalizes single-quoted range boundaries', (t) => {
+  const serialized = serialize(parse("created:['2020-01-01' TO '2020-12-31']"));
+
+  t.is(serialized, 'created:["2020-01-01" TO "2020-12-31"]');
+  t.notThrows(() => parse(serialized));
+});

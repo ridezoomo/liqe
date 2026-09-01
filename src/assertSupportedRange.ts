@@ -27,17 +27,33 @@ const ISO_TIME = new RegExp(
   'u',
 );
 
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
 const RANGE_ERROR_MESSAGE =
   'Expected a number, ISO 8601 date, UTC date-time, or 24-hour time.';
+
+const isLeapYear = (year: number): boolean => {
+  return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+};
+
+const isValidCalendarDate = (value: string): boolean => {
+  const year = Number(value.slice(0, 4));
+  const month = Number(value.slice(5, 7));
+  const day = Number(value.slice(8, 10));
+  const maxDay =
+    month === 2 && isLeapYear(year) ? 29 : DAYS_IN_MONTH[month - 1];
+
+  return day <= maxDay;
+};
 
 const detectRangeStringFormat = (
   value: string,
 ): 'date' | 'datetime' | 'time' | null => {
-  if (ISO_DATE.test(value)) {
+  if (ISO_DATE.test(value) && isValidCalendarDate(value)) {
     return 'date';
   }
 
-  if (ISO_UTC_DATE_TIME.test(value)) {
+  if (ISO_UTC_DATE_TIME.test(value) && isValidCalendarDate(value)) {
     return 'datetime';
   }
 
