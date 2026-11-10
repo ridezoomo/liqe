@@ -679,6 +679,146 @@ test('foo:b', testQuery, {
   type: 'Tag',
 });
 
+test('foo:>=-30d', testQuery, {
+  expression: {
+    location: {
+      end: 10,
+      start: 6,
+    },
+    quoted: false,
+    type: 'LiteralExpression',
+    value: '-30d',
+  },
+  field: {
+    location: {
+      end: 3,
+      start: 0,
+    },
+    name: 'foo',
+    path: ['foo'],
+    quoted: false,
+    type: 'Field',
+  },
+  location: {
+    end: 10,
+    start: 0,
+  },
+  operator: {
+    location: {
+      end: 6,
+      start: 3,
+    },
+    operator: ':>=',
+    type: 'ComparisonOperator',
+  },
+  type: 'Tag',
+});
+
+test('foo:+2w', testQuery, {
+  expression: {
+    location: {
+      end: 7,
+      start: 4,
+    },
+    quoted: false,
+    type: 'LiteralExpression',
+    value: '+2w',
+  },
+  field: {
+    location: {
+      end: 3,
+      start: 0,
+    },
+    name: 'foo',
+    path: ['foo'],
+    quoted: false,
+    type: 'Field',
+  },
+  location: {
+    end: 7,
+    start: 0,
+  },
+  operator: {
+    location: {
+      end: 4,
+      start: 3,
+    },
+    operator: ':',
+    type: 'ComparisonOperator',
+  },
+  type: 'Tag',
+});
+
+test('foo:bar+baz@qux.com', testQuery, {
+  expression: {
+    location: {
+      end: 19,
+      start: 4,
+    },
+    quoted: false,
+    type: 'LiteralExpression',
+    value: 'bar+baz@qux.com',
+  },
+  field: {
+    location: {
+      end: 3,
+      start: 0,
+    },
+    name: 'foo',
+    path: ['foo'],
+    quoted: false,
+    type: 'Field',
+  },
+  location: {
+    end: 19,
+    start: 0,
+  },
+  operator: {
+    location: {
+      end: 4,
+      start: 3,
+    },
+    operator: ':',
+    type: 'ComparisonOperator',
+  },
+  type: 'Tag',
+});
+
+test('foo:>@today+7d', testQuery, {
+  expression: {
+    location: {
+      end: 14,
+      start: 5,
+    },
+    quoted: false,
+    type: 'LiteralExpression',
+    value: '@today+7d',
+  },
+  field: {
+    location: {
+      end: 3,
+      start: 0,
+    },
+    name: 'foo',
+    path: ['foo'],
+    quoted: false,
+    type: 'Field',
+  },
+  location: {
+    end: 14,
+    start: 0,
+  },
+  operator: {
+    location: {
+      end: 5,
+      start: 3,
+    },
+    operator: ':>',
+    type: 'ComparisonOperator',
+  },
+  type: 'Tag',
+});
+
 test('foo:bar@baz.com', testQuery, {
   expression: {
     location: {

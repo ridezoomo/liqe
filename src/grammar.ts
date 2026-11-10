@@ -477,7 +477,7 @@ const grammar: Grammar = {
       symbols: [
         'field',
         'comparison_operator',
-        'expression',
+        'field_expression',
         'tag_expression$ebnf$1',
         'tag_expression$ebnf$2',
       ],
@@ -541,7 +541,7 @@ const grammar: Grammar = {
           type: 'BooleanOperator',
         },
       }),
-      symbols: [{ literal: ',' }, 'expression'],
+      symbols: [{ literal: ',' }, 'field_expression'],
     },
     {
       name: 'trailing_comma',
@@ -590,6 +590,20 @@ const grammar: Grammar = {
         type: 'LiteralExpression',
       }),
       symbols: ['dqstring'],
+    },
+    { name: 'field_expression', postprocess: id, symbols: ['expression'] },
+    {
+      name: 'field_expression',
+      postprocess: (data, start) => ({
+        expression: {
+          location: { end: start + data[0].length, start },
+          quoted: false,
+          type: 'LiteralExpression',
+          value: data[0],
+        },
+        type: 'Tag',
+      }),
+      symbols: ['signed_unquoted_value'],
     },
     {
       name: 'expression',
@@ -842,11 +856,33 @@ const grammar: Grammar = {
       postprocess: (d) => d[0].join(''),
       symbols: ['regex_flags$ebnf$1'],
     },
+    { name: 'signed_unquoted_value$ebnf$1', symbols: [/\d/] },
+    {
+      name: 'signed_unquoted_value$ebnf$1',
+      postprocess: (d) => d[0].concat([d[1]]),
+      symbols: ['signed_unquoted_value$ebnf$1', /\d/],
+    },
+    { name: 'signed_unquoted_value$ebnf$2', symbols: [] },
+    {
+      name: 'signed_unquoted_value$ebnf$2',
+      postprocess: (d) => d[0].concat([d[1]]),
+      symbols: ['signed_unquoted_value$ebnf$2', /[\w#$*+.?@\u0080-\uFFFF\-]/],
+    },
+    {
+      name: 'signed_unquoted_value',
+      postprocess: (d) => d[0] + d[1].join('') + d[2] + d[3].join(''),
+      symbols: [
+        /[+-]/,
+        'signed_unquoted_value$ebnf$1',
+        /[#$*?@A-Z_a-z\u0080-\uFFFF]/,
+        'signed_unquoted_value$ebnf$2',
+      ],
+    },
     { name: 'unquoted_value$ebnf$1', symbols: [] },
     {
       name: 'unquoted_value$ebnf$1',
       postprocess: (d) => d[0].concat([d[1]]),
-      symbols: ['unquoted_value$ebnf$1', /[\w#$*.?@\u0080-\uFFFF\-]/],
+      symbols: ['unquoted_value$ebnf$1', /[\w#$*+.?@\u0080-\uFFFF\-]/],
     },
     {
       name: 'unquoted_value',
@@ -863,7 +899,7 @@ const grammar: Grammar = {
     {
       name: 'unquoted_value$ebnf$3',
       postprocess: (d) => d[0].concat([d[1]]),
-      symbols: ['unquoted_value$ebnf$3', /[\w#$*.?@\u0080-\uFFFF\-]/],
+      symbols: ['unquoted_value$ebnf$3', /[\w#$*+.?@\u0080-\uFFFF\-]/],
     },
     {
       name: 'unquoted_value',

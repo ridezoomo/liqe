@@ -133,7 +133,7 @@ post_boolean_primary ->
 
 tag_expression ->
     
-    field comparison_operator expression comma_expression:* trailing_comma:? {% (data, start) => {
+    field comparison_operator field_expression comma_expression:* trailing_comma:? {% (data, start) => {
     const field = {
       type: 'Field',
       name: data[0].name,
@@ -217,7 +217,7 @@ tag_expression ->
   } %}
 
 comma_expression ->
-    "," expression {% (data, start) => ({
+    "," field_expression {% (data, start) => ({
       operator: {
         location: {
           start,
@@ -241,6 +241,11 @@ field ->
     [_a-zA-Z$] [a-zA-Z\d_$.-]:* {% (data, start) => ({type: 'LiteralExpression', name: data[0] + data[1].join(''), quoted: false, location: {start, end: start + (data[0] + data[1].join('')).length}}) %}
   | sqstring {% (data, start) => ({type: 'LiteralExpression', name: data[0], quoted: true, quotes: 'single', location: {start, end: start + data[0].length + 2}}) %}
   | dqstring {% (data, start) => ({type: 'LiteralExpression', name: data[0], quoted: true, quotes: 'double', location: {start, end: start + data[0].length + 2}}) %}
+
+# Only valid after a field and operator, where a leading sign cannot mean negation: `created:>=-30d`
+field_expression ->
+    expression {% id %}
+  | signed_unquoted_value {% (data, start) => ({type: 'Tag', expression: {location: {start, end: start + data[0].length}, type: 'LiteralExpression', quoted: false, value: data[0]}}) %}
 
 expression ->
     decimal {% (data, start) => ({type: 'Tag', expression: {location: {start, end: start + data.join('').length}, type: 'LiteralExpression', quoted: false, value: Number(data.join(''))}}) %}
@@ -345,6 +350,10 @@ regex_flags ->
   null |
   [gmiyusd]:+ {% d => d[0].join('') %}
 
+# A sign, digits, then a letter so it never overlaps a signed decimal: `-30d`, `+2w`
+signed_unquoted_value ->
+    [+-] [0-9]:+ [a-zA-Z_*?@#$\u0080-\uFFFF] [a-zA-Z0-9\.\-+_*?@#$\u0080-\uFFFF]:* {% d => d[0] + d[1].join('') + d[2] + d[3].join('') %}
+
 unquoted_value ->
-    [a-zA-Z_*?@#$\u0080-\uFFFF] [a-zA-Z0-9\.\-_*?@#$\u0080-\uFFFF]:* {% d => d[0] + d[1].join('') %}
-  | [0-9]:+ [a-zA-Z\-_*?@#$\u0080-\uFFFF] [a-zA-Z0-9\.\-_*?@#$\u0080-\uFFFF]:* {% d => d[0].join('') + d[1] + d[2].join('') %}
+    [a-zA-Z_*?@#$\u0080-\uFFFF] [a-zA-Z0-9\.\-+_*?@#$\u0080-\uFFFF]:* {% d => d[0] + d[1].join('') %}
+  | [0-9]:+ [a-zA-Z\-_*?@#$\u0080-\uFFFF] [a-zA-Z0-9\.\-+_*?@#$\u0080-\uFFFF]:* {% d => d[0].join('') + d[1] + d[2].join('') %}
